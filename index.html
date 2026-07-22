@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prism P1/P2 Visual Model Guide</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101418;
+      --surface: #181e24;
+      --surface-2: #202830;
+      --line: #39444e;
+      --line-strong: #62717e;
+      --text: #f3f6f8;
+      --muted: #aeb8c1;
+      --cyan: #53c6c2;
+      --cyan-soft: #183d3d;
+      --amber: #f0b85a;
+      --amber-soft: #42351e;
+      --blue: #78a9ef;
+      --blue-soft: #20354f;
+      --green: #76c991;
+      --green-soft: #1d3d2a;
+      --red: #ee8585;
+      --red-soft: #472626;
+      --focus: #ffffff;
+      --radius: 7px;
+      --shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+
+    button, input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 20px 24px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand h1 {
+      margin: 0 0 3px;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .segmented {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .segmented button {
+      min-width: 92px;
+      min-height: 38px;
+      padding: 7px 13px;
+      border: 0;
+      border-right: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .segmented button:last-child { border-right: 0; }
+    .segmented button[aria-pressed="true"] { background: var(--cyan); color: #071615; }
+
+    .reset-button {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .reset-button:hover { background: var(--surface-2); }
+
+    .progress-wrap {
+      display: grid;
+      grid-template-columns: auto minmax(100px, 150px);
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .progress-track {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 4px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: var(--green);
+      transition: width 180ms ease;
+    }
+
+    .section {
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(112px, 1fr));
+      gap: 22px;
+      align-items: stretch;
+      overflow-x: auto;
+      padding: 4px 4px 18px;
+      scrollbar-color: var(--line-strong) var(--surface);
+    }
+
+    .step {
+      position: relative;
+      min-width: 112px;
+      min-height: 142px;
+      padding: 13px 12px 12px;
+      border: 1px solid var(--line-strong);
+      border-top: 4px solid var(--step-color, var(--cyan));
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      box-shadow: var(--shadow);
+    }
+
+    .step::after {
+      content: "";
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      left: calc(100% + 1px);
+      width: 22px;
+      height: 12px;
+      transform: translateY(-50%);
+      background: var(--line-strong);
+      clip-path: polygon(0 33%, 66% 33%, 66% 0, 100% 50%, 66% 100%, 66% 67%, 0 67%);
+      pointer-events: none;
+    }
+
+    .step:last-child::after { display: none; }
+    .step:hover { border-color: var(--step-color, var(--cyan)); }
+    .step[aria-current="step"] { border-color: var(--step-color, var(--cyan)); box-shadow: 0 0 0 2px var(--step-color, var(--cyan)), var(--shadow); }
+    .step.complete { background: #17241d; }
+
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+      color: var(--step-color, var(--cyan));
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .step-check {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      color: transparent;
+      background: var(--bg);
+      font-size: 17px;
+    }
+
+    .step.complete .step-check {
+      border-color: var(--green);
+      background: var(--green);
+      color: #07170c;
+    }
+
+    .step-title {
+      display: block;
+      min-height: 44px;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .step-hint {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .context { --step-color: var(--cyan); }
+    .confirmation { --step-color: var(--amber); }
+    .geometry { --step-color: var(--blue); }
+    .entry { --step-color: var(--green); }
+    .target { --step-color: var(--red); }
+
+    .detail-panel {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.75fr) minmax(360px, 1.6fr) minmax(220px, 0.8fr);
+      gap: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .detail-summary,
+    .detail-checks,
+    .direction-rule { padding: 18px; }
+    .detail-summary,
+    .detail-checks { border-right: 1px solid var(--line); }
+
+    .eyebrow {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .detail-summary h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .detail-summary p,
+    .direction-rule p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .detail-checks h4,
+    .direction-rule h4 {
+      margin: 0 0 10px;
+      font-size: 13px;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .check-list li {
+      position: relative;
+      padding-left: 21px;
+      color: #dce2e7;
+      font-size: 13px;
+    }
+
+    .check-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 8px;
+      height: 8px;
+      border: 2px solid var(--blue);
+      border-radius: 50%;
+    }
+
+    .rule-callout {
+      margin-top: 13px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--amber);
+      background: var(--amber-soft);
+      color: #f6dfb8;
+      font-size: 12px;
+    }
+
+    .branch-grid {
+      display: grid;
+      grid-template-columns: 0.8fr 1.4fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .lane {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .lane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 57px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .lane-header h3 { margin: 0; font-size: 15px; }
+    .lane-header span { color: var(--muted); font-size: 12px; text-align: right; }
+    .primary-lane .lane-header { border-top: 4px solid var(--green); }
+    .reentry-lane .lane-header { border-top: 4px solid var(--amber); }
+
+    .primary-body { padding: 18px; }
+
+    .entry-trigger {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 13px;
+      align-items: center;
+    }
+
+    .trigger-icon {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      color: var(--green);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .entry-trigger strong { display: block; margin-bottom: 3px; }
+    .entry-trigger p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .reentry-flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(105px, 1fr));
+      gap: 20px;
+      align-items: stretch;
+      padding: 18px;
+      overflow-x: auto;
+    }
+
+    .micro-step {
+      position: relative;
+      min-height: 105px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+
+    .micro-step::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 3px);
+      width: 15px;
+      height: 10px;
+      transform: translateY(-50%);
+      background: var(--amber);
+      clip-path: polygon(0 35%, 65% 35%, 65% 0, 100% 50%, 65% 100%, 65% 65%, 0 65%);
+    }
+
+    .micro-step:last-child::after { display: none; }
+    .micro-step b { display: block; margin-bottom: 7px; color: var(--amber); font-size: 12px; text-transform: uppercase; }
+    .micro-step span { display: block; font-size: 13px; font-weight: 700; line-height: 1.3; }
+    .micro-step small { display: block; margin-top: 7px; color: var(--muted); line-height: 1.3; }
+
+    .reentry-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .do-list,
+    .avoid-list { padding: 15px 18px; }
+    .do-list { border-right: 1px solid var(--line); background: var(--green-soft); }
+    .avoid-list { background: var(--red-soft); }
+    .do-list h4,
+    .avoid-list h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; }
+    .do-list h4 { color: var(--green); }
+    .avoid-list h4 { color: var(--red); }
+    .do-list p,
+    .avoid-list p { margin: 0; color: #e6ebee; font-size: 12px; }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .scan-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .scan-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: center;
+      min-height: 54px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .scan-item:hover { border-color: var(--line-strong); }
+    .scan-item input { width: 19px; height: 19px; accent-color: var(--green); }
+    .scan-item span { font-size: 13px; font-weight: 650; }
+    .scan-item.checked { color: var(--muted); background: #152019; }
+    .scan-item.checked span { text-decoration: line-through; text-decoration-thickness: 1px; }
+
+    .memory {
+      position: sticky;
+      top: 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .memory h3 {
+      margin: 0;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .memory-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 14px 15px;
+    }
+
+    .memory-line + .memory-line { border-top: 1px solid var(--line); }
+    .memory-line strong { width: 100%; margin-bottom: 3px; color: var(--muted); font-size: 11px; text-transform: uppercase; }
+
+    .token {
+      display: inline-flex;
+      align-items: center;
+      min-height: 29px;
+      padding: 5px 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .token.arrow {
+      padding: 0 1px;
+      border: 0;
+      background: transparent;
+      color: var(--line-strong);
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1050px) {
+      .workflow { grid-template-columns: repeat(9, 140px); }
+      .detail-panel { grid-template-columns: 1fr 1.5fr; }
+      .direction-rule { grid-column: 1 / -1; border-top: 1px solid var(--line); }
+      .detail-checks { border-right: 0; }
+      .branch-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .shell { padding: 16px 14px 36px; }
+      .topbar { display: grid; }
+      .toolbar { justify-content: flex-start; }
+      .progress-wrap { width: 100%; grid-template-columns: auto 1fr; }
+      .section-heading { display: block; }
+      .section-heading p { margin-top: 5px; text-align: left; }
+      .workflow {
+        grid-template-columns: 1fr;
+        gap: 29px;
+        overflow: visible;
+        padding: 4px 0;
+      }
+      .step { min-height: 104px; }
+      .step::after {
+        top: calc(100% + 1px);
+        left: 50%;
+        width: 13px;
+        height: 29px;
+        transform: translateX(-50%) rotate(90deg);
+      }
+      .step-title { min-height: 0; }
+      .detail-panel { grid-template-columns: 1fr; }
+      .detail-summary,
+      .detail-checks { border-right: 0; border-bottom: 1px solid var(--line); }
+      .reentry-flow { grid-template-columns: 1fr; overflow: visible; gap: 27px; }
+      .micro-step::after {
+        top: calc(100% + 3px);
+        left: 50%;
+        width: 15px;
+        height: 20px;
+        transform: translateX(-50%) rotate(90deg);
+      }
+      .reentry-footer { grid-template-columns: 1fr; }
+      .do-list { border-right: 0; border-bottom: 1px solid var(--line); }
+      .live-grid { grid-template-columns: 1fr; }
+      .scan-list { grid-template-columns: 1fr; }
+      .memory { position: static; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .progress-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Prism P1/P2 Visual Model Guide</h1>
+        <p>Liquidity-to-target workflow with the missed-entry Vertex re-entry path kept in view.</p>
+      </div>
+      <div class="toolbar">
+        <div class="segmented" role="group" aria-label="Model direction">
+          <button id="bullishMode" type="button" aria-pressed="true">Bullish</button>
+          <button id="bearishMode" type="button" aria-pressed="false">Bearish</button>
+        </div>
+        <button class="reset-button" id="resetChecklist" type="button" title="Clear all completed steps">Reset</button>
+        <div class="progress-wrap" aria-live="polite">
+          <span id="progressLabel">0 of 19</span>
+          <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="workflowTitle">
+      <div class="section-heading">
+        <h2 id="workflowTitle">The Whole Model</h2>
+        <p>Select a step for its rules. Use the check circle to mark what price has completed.</p>
+      </div>
+      <div class="workflow" id="workflow" aria-label="P1 and P2 model workflow"></div>
+      <div class="detail-panel" id="detailPanel" aria-live="polite"></div>
+    </section>
+
+    <section class="section" aria-labelledby="entryTitle">
+      <div class="section-heading">
+        <h2 id="entryTitle">Two Entry Paths</h2>
+        <p>Do not chase a missed primary Entry. Shift attention to the frozen Vertex.</p>
+      </div>
+      <div class="branch-grid">
+        <article class="lane primary-lane">
+          <div class="lane-header">
+            <h3>Primary Entry</h3>
+            <span>Preferred first opportunity</span>
+          </div>
+          <div class="primary-body">
+            <div class="entry-trigger">
+              <div class="trigger-icon" aria-hidden="true">↳</div>
+              <div>
+                <strong>Wick through the Entry Anchor</strong>
+                <p>A body close is not required. Freeze SMR, Vertex, Local Equilibrium, and Entry Anchor when the Entry triggers.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="lane reentry-lane">
+          <div class="lane-header">
+            <h3>Missed It? Vertex Re-Entry</h3>
+            <span>Manual second-chance opportunity</span>
+          </div>
+          <div class="reentry-flow" id="reentryFlow"></div>
+          <div class="reentry-footer">
+            <div class="do-list">
+              <h4>Structure remains valid</h4>
+              <p>SMR stop is intact, target is unhit, the Vertex was crossed favorably first, and meaningful room remains.</p>
+            </div>
+            <div class="avoid-list">
+              <h4>Stand down</h4>
+              <p>Repeated wrong-side closes, a deep return toward SMR, imbalance failure, target already hit, or unknowable same-candle ordering.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="scanTitle">
+      <div class="section-heading">
+        <h2 id="scanTitle">Ten-Second Live Scan</h2>
+        <p>Check only what the chart has actually confirmed.</p>
+      </div>
+      <div class="live-grid">
+        <div class="scan-list" id="scanList"></div>
+        <aside class="memory" aria-label="Condensed workflow">
+          <h3>Shortest Memory Version</h3>
+          <div class="memory-line" id="primaryMemory"></div>
+          <div class="memory-line" id="reentryMemory"></div>
+        </aside>
+      </div>
+      <p class="footer-note">The primary Entry rules are canonical. Vertex re-entry remains a manual opportunity pending dedicated historical validation.</p>
+    </section>
+  </main>
+
+  <script>
+    const directions = {
+      bullish: {
+        name: "Bullish",
+        purgeSide: "Sellside",
+        purgeText: "A wick reaches or crosses eligible Sellside Liquidity.",
+        smr: "Mark the lowest low of the reversal structure. Move it lower if a farther valid extreme forms before confirmation.",
+        cisd: "Use the open of the first candle in the relevant down-close series to the left of SMR. A one-minute body must close above it.",
+        vertex: "Track the farthest favorable high created as price displaces away from SMR.",
+        equilibrium: "Draw the midpoint from the farthest SMR low to the active Vertex high.",
+        entry: "Price retraces downward and wicks through the selected Entry Anchor.",
+        cross: "Price trades at or above the frozen Vertex.",
+        return: "Price pulls back and wicks through the Vertex from above.",
+        reclaim: "Price returns above Vertex instead of accepting below it.",
+        target: "Aim toward eligible Buyside Liquidity beyond Vertex.",
+        stop: "Stop is one instrument tick below the farthest SMR wick."
+      },
+      bearish: {
+        name: "Bearish",
+        purgeSide: "Buyside",
+        purgeText: "A wick reaches or crosses eligible Buyside Liquidity.",
+        smr: "Mark the highest high of the reversal structure. Move it higher if a farther valid extreme forms before confirmation.",
+        cisd: "Use the open of the first candle in the relevant up-close series to the left of SMR. A one-minute body must close below it.",
+        vertex: "Track the farthest favorable low created as price displaces away from SMR.",
+        equilibrium: "Draw the midpoint from the farthest SMR high to the active Vertex low.",
+        entry: "Price retraces upward and wicks through the selected Entry Anchor.",
+        cross: "Price trades at or below the frozen Vertex.",
+        return: "Price rallies and wicks through the Vertex from below.",
+        reclaim: "Price returns below Vertex instead of accepting above it.",
+        target: "Aim toward eligible Sellside Liquidity beyond Vertex.",
+        stop: "Stop is one instrument tick above the farthest SMR wick."
+      }
+    };
+
+    const steps = [
+      {
+        id: "liquidity", number: "01", title: "Liquidity Pool", hint: "Mark active levels", type: "context",
+        summary: "Begin with the liquidity map, not with candle patterns.",
+        checks: ["Mark active pools above and below price.", "Separate ETH pools from RTH, NY AM, and NY PM pools.", "Remember that RTH-origin pools can only be purged during RTH."],
+        direction: d => `A ${d.name.toLowerCase()} model must begin from ${d.purgeSide} Liquidity.`,
+        callout: "What Liquidity did price just take?"
+      },
+      {
+        id: "purge", number: "02", title: "Liquidity Purge", hint: "Valid wick through level", type: "context",
+        summary: "The purge starts the search. It does not prove a model will form.",
+        checks: ["A finalized one-minute candle wick reaches or crosses the level.", "The candle session is eligible to purge that pool.", "Record the exact pool, side, price, and purge time."],
+        direction: d => d.purgeText,
+        callout: "Use wick-only purge logic, while still enforcing the pool's session rule."
+      },
+      {
+        id: "smr", number: "03", title: "Provisional SMR", hint: "Farthest reversal extreme", type: "confirmation",
+        summary: "Track the reversal extreme that defines both structure and risk.",
+        checks: ["Start a provisional SMR after the valid purge.", "Replace it when price creates a farther valid extreme before confirmation.", "Keep origin time and later confirmation time separate."],
+        direction: d => `${d.smr} ${d.stop}`,
+        callout: "The SMR-derived stop is the structural invalidation for both Entry paths."
+      },
+      {
+        id: "cisd", number: "04", title: "CISD Close", hint: "Body-close confirmation", type: "confirmation",
+        summary: "CISD confirms that delivery likely reversed and confirms the SMR candidate.",
+        checks: ["Find the relevant same-direction candle series to the left of SMR.", "Draw CISD at the open of the first candle in that series.", "Require a finalized one-minute body close through CISD."],
+        direction: d => d.cisd,
+        callout: "A wick through CISD is not confirmation."
+      },
+      {
+        id: "displacement", number: "05", title: "Displacement", hint: "FVG or IFVG evidence", type: "confirmation",
+        summary: "Look for noticeable delivery away from SMR in the reversal direction.",
+        checks: ["Price moves favorably away from SMR.", "Find an aligned FVG or IFVG as displacement evidence.", "Prefer imbalance aligned horizontally with CISD or Local Equilibrium."],
+        direction: d => `${d.name} displacement moves away from the SMR toward the eventual ${d.target.split(" ")[3]} side.`,
+        callout: "Prism automatic v1 requires FVG/IFVG evidence. Manual no-gap models remain outside v1 coverage."
+      },
+      {
+        id: "vertex", number: "06", title: "Vertex", hint: "Farthest favorable wick", type: "geometry",
+        summary: "Vertex is the favorable extreme where displacement stops and begins returning toward SMR.",
+        checks: ["Track a provisional Vertex as favorable delivery extends.", "Replace it if a farther favorable swing forms before Entry or lock.", "Treat opposite-color non-extension as an early clue, not final proof."],
+        direction: d => d.vertex,
+        callout: "Successive farther swings create new potential Vertex candidates."
+      },
+      {
+        id: "equilibrium", number: "07", title: "Local Equilibrium", hint: "50% of SMR-Vertex range", type: "geometry",
+        summary: "Local Equilibrium is the midpoint of the active SMR-to-Vertex range.",
+        checks: ["Use the farthest SMR wick and farthest active Vertex wick.", "Recalculate if the provisional Vertex extends.", "A return to Local Equilibrium definitively identifies that Vertex."],
+        direction: d => d.equilibrium,
+        callout: "Mechanical Vertex clues are fast. Local Equilibrium return is definitive but later."
+      },
+      {
+        id: "anchor", number: "08", title: "Entry Anchor", hint: "CISD or Local Equilibrium", type: "entry",
+        summary: "Choose the valid geometry that gives the active primary Entry level.",
+        checks: ["Compare selected CISD with Local Equilibrium.", "Use whichever level is closest to SMR.", "Confirm aligned FVG/IFVG support and target room beyond Vertex."],
+        direction: d => d.entry,
+        callout: "The Entry triggers on a wick through the anchor. A body close is not required."
+      },
+      {
+        id: "target", number: "09", title: "Liquidity Target", hint: "Closest eligible pool beyond Vertex", type: "target",
+        summary: "Terminus is the selected Liquidity Pool the model aims toward.",
+        checks: ["Confirm the target is on the favorable side of Vertex.", "Use the closest eligible active pool as live v1's default candidate.", "Keep alternate candidate pools visible for real-time judgment."],
+        direction: d => d.target,
+        callout: "A target candidate is not a promise that price will reach it."
+      }
+    ];
+
+    const scanQuestions = [
+      "What Liquidity was purged?",
+      "Where is SMR?",
+      "Did a body close confirm CISD?",
+      "Is displacement with FVG/IFVG visible?",
+      "Where is the active Vertex?",
+      "Where is Local Equilibrium?",
+      "Is Entry Anchor CISD or Equilibrium?",
+      "Did price wick through the primary Entry?",
+      "Missed it: cross, return, and reclaim Vertex?",
+      "Is SMR intact with room to target?"
+    ];
+
+    const state = {
+      direction: localStorage.getItem("prism-guide-direction") || "bullish",
+      selected: "liquidity",
+      complete: JSON.parse(localStorage.getItem("prism-guide-complete") || "{}"),
+      scan: JSON.parse(localStorage.getItem("prism-guide-scan") || "{}")
+    };
+
+    const workflow = document.getElementById("workflow");
+    const detailPanel = document.getElementById("detailPanel");
+    const reentryFlow = document.getElementById("reentryFlow");
+    const scanList = document.getElementById("scanList");
+
+    function renderWorkflow() {
+      workflow.innerHTML = steps.map(step => `
+        <button class="step ${step.type} ${state.complete[step.id] ? "complete" : ""}"
+          type="button" data-step="${step.id}" aria-current="${state.selected === step.id ? "step" : "false"}">
+          <span class="step-number">Step ${step.number}<span class="step-check" aria-label="${state.complete[step.id] ? "Complete" : "Incomplete"}">✓</span></span>
+          <span class="step-title">${step.title}</span>
+          <span class="step-hint">${step.hint}</span>
+        </button>
+      `).join("");
+
+      workflow.querySelectorAll(".step").forEach(button => {
+        button.addEventListener("click", event => {
+          const id = button.dataset.step;
+          if (event.target.classList.contains("step-check")) {
+            state.complete[id] = !state.complete[id];
+            persist();
+            renderWorkflow();
+            updateProgress();
+            return;
+          }
+          state.selected = id;
+          renderWorkflow();
+          renderDetail();
+        });
+      });
+    }
+
+    function renderDetail() {
+      const step = steps.find(item => item.id === state.selected);
+      const d = directions[state.direction];
+      detailPanel.innerHTML = `
+        <div class="detail-summary">
+          <span class="eyebrow">Step ${step.number} · ${d.name}</span>
+          <h3>${step.title}</h3>
+          <p>${step.summary}</p>
+          <div class="rule-callout">${step.callout}</div>
+        </div>
+        <div class="detail-checks">
+          <h4>What to verify</h4>
+          <ul class="check-list">${step.checks.map(item => `<li>${item}</li>`).join("")}</ul>
+        </div>
+        <div class="direction-rule">
+          <h4>${d.name} chart rule</h4>
+          <p>${step.direction(d)}</p>
+        </div>
+      `;
+    }
+
+    function renderReentry() {
+      const d = directions[state.direction];
+      const items = [
+        ["1", "Favorable cross", d.cross],
+        ["2", "Return to Vertex", d.return],
+        ["3", "Reject wrong side", "Prefer a shallow wick over sustained wrong-side body acceptance."],
+        ["4", "Reclaim Vertex", d.reclaim],
+        ["5", "Renewed delivery", "A second favorable cross restores continuation toward unhit Liquidity."]
+      ];
+      reentryFlow.innerHTML = items.map(item => `
+        <div class="micro-step"><b>Stage ${item[0]}</b><span>${item[1]}</span><small>${item[2]}</small></div>
+      `).join("");
+    }
+
+    function renderScan() {
+      scanList.innerHTML = scanQuestions.map((question, index) => `
+        <label class="scan-item ${state.scan[index] ? "checked" : ""}">
+          <input type="checkbox" data-scan="${index}" ${state.scan[index] ? "checked" : ""}>
+          <span>${index + 1}. ${question}</span>
+        </label>
+      `).join("");
+      scanList.querySelectorAll("input").forEach(input => {
+        input.addEventListener("change", () => {
+          state.scan[input.dataset.scan] = input.checked;
+          persist();
+          renderScan();
+          updateProgress();
+        });
+      });
+    }
+
+    function renderMemory() {
+      const primary = ["PURGE", "SMR", "CISD CLOSE", "DISPLACEMENT", "VERTEX", "LE", "ENTRY WICK", "TARGET"];
+      const second = ["VERTEX CROSS", "VERTEX RETEST", "RECLAIM", "SECOND CROSS", "TARGET"];
+      document.getElementById("primaryMemory").innerHTML = memoryTokens("Primary", primary);
+      document.getElementById("reentryMemory").innerHTML = memoryTokens("Missed Entry", second);
+    }
+
+    function memoryTokens(label, items) {
+      return `<strong>${label}</strong>` + items.map((item, index) =>
+        `<span class="token">${item}</span>${index < items.length - 1 ? '<span class="token arrow">→</span>' : ''}`
+      ).join("");
+    }
+
+    function setDirection(direction) {
+      state.direction = direction;
+      localStorage.setItem("prism-guide-direction", direction);
+      document.getElementById("bullishMode").setAttribute("aria-pressed", direction === "bullish");
+      document.getElementById("bearishMode").setAttribute("aria-pressed", direction === "bearish");
+      renderDetail();
+      renderReentry();
+    }
+
+    function persist() {
+      localStorage.setItem("prism-guide-complete", JSON.stringify(state.complete));
+      localStorage.setItem("prism-guide-scan", JSON.stringify(state.scan));
+    }
+
+    function updateProgress() {
+      const total = steps.length + scanQuestions.length;
+      const completedSteps = steps.filter(step => state.complete[step.id]).length;
+      const completedScan = scanQuestions.filter((_, index) => state.scan[index]).length;
+      const completed = completedSteps + completedScan;
+      document.getElementById("progressLabel").textContent = `${completed} of ${total}`;
+      document.getElementById("progressFill").style.width = `${(completed / total) * 100}%`;
+    }
+
+    document.getElementById("bullishMode").addEventListener("click", () => setDirection("bullish"));
+    document.getElementById("bearishMode").addEventListener("click", () => setDirection("bearish"));
+    document.getElementById("resetChecklist").addEventListener("click", () => {
+      state.complete = {};
+      state.scan = {};
+      persist();
+      renderWorkflow();
+      renderScan();
+      updateProgress();
+    });
+
+    renderWorkflow();
+    renderDetail();
+    renderReentry();
+    renderScan();
+    renderMemory();
+    setDirection(state.direction);
+    updateProgress();
+  </script>
+</body>
+</html>
